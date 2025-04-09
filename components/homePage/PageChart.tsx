@@ -1,18 +1,37 @@
 'use client'
 
-import { Box, Paper } from "@mui/material"
+import { Box, CircularProgress, Paper } from "@mui/material"
 import ReactECharts from "echarts-for-react"
+import { useMemo, type FC } from "react"
+import dayjs from "dayjs"
+
 import { Title } from "@/components/Title"
-import { useMemo, useState } from "react"
-
 import { Dropdown, DropdownOption } from "@/components/Dropdown"
+import { useStore } from "@/store"
+import { TaiwanStockMonthRevenueAndGrowthRate } from "@/api"
 
-export const PageChart = () => {
+export interface PageChartProps {
+  data: TaiwanStockMonthRevenueAndGrowthRate[];
+  isLoading: boolean;
+}
+
+export const PageChart: FC<PageChartProps> = ({ data, isLoading }) => {
+  const {timeRange, setTimeRange} = useStore()
   const option = useMemo(() => {
+    const revenues: number[] = []
+    const growthRates: number[] = []
+    const xAxisData: string[] = []
+
+    data?.forEach((item) => {
+      revenues.push(item.revenue * 0.0001)
+      growthRates.push(item.growth_rate)
+      xAxisData.push(dayjs(`${item.revenue_year}-${item.revenue_month}`).format('YYYYMM'))
+    })
+
     return {
       color: ['#dfb13c', '#bc5450'],
       legend: {
-        data: ['销量', 'ab'],
+        data: ['每月营收', '单月营收成长率'],
         top: 0,
         left: 60,
         textStyle: {
@@ -29,32 +48,72 @@ export const PageChart = () => {
       tooltip: {
         trigger: 'axis',
       },
-      xAxis: {},
-      yAxis: {},
-      series: [
+      xAxis: {
+        data: xAxisData,
+        type: 'category',
+        axisLabel: {
+          fontSize: 12,
+          interval: timeRange > 1 ? 12 : 1,
+          color: '#666',
+          formatter: (value: string) => {
+            return timeRange > 1 ? dayjs(value).format('YYYY') : value;
+          }
+        }
+      },
+      yAxis: [
         {
-          name: '销量',
-          type: 'bar',
-          data: [120, 200, 150, 80, 70, 110, 130],
+          type: 'value',
+          position: 'left',
+          min: 0,
         },
         {
-          name: 'ab',
+          type: 'value',
+          position: 'right',
+          min: -100,
+          max: 100,
+        }
+      ],
+      series: [
+        {
+          name: '每月营收',
+          type: 'bar',
+          yAxis: 0,
+          data: revenues,
+          tooltip: {
+            show: true,
+            valueFormatter: (value: number) => `${value.toFixed(2)} 千元`
+          }
+        },
+        {
+          name: '单月营收成长率',
           type: 'line',
-          data: [120, 200, 150, 80, 70, 110, 130]
+          smooth: true,
+          yAxisIndex: 1,
+          data: growthRates,
+          tooltip: {
+            show: true,
+            valueFormatter: (value: number) => `${value.toFixed(2)}%`
+          }
         }
       ]
     }
-  }, [])
+  }, [data, timeRange])
 
   const dropDownOptions: DropdownOption[] = useMemo(() => {
     return [
-      { label: '近 5 年', value: '5' },
-      { label: '近 3 年', value: '3' },
-      { label: '近 1 年', value: '1' }
+      { label: '近 5 年', value: 5 },
+      { label: '近 3 年', value: 3 },
+      { label: '近 1 年', value: 1 }
     ]
   }, [])
 
-  const [timeRange, setTimeRange] = useState<DropdownOption>(dropDownOptions[0])
+  const handleDropdownChange = (option: DropdownOption) => {
+    setTimeRange(option.value)
+  }
+
+  const selectedOption = useMemo(() => {
+    return dropDownOptions.find(option => option.value === timeRange)
+  }, [timeRange, dropDownOptions])
 
   return (
     <Paper elevation={0} sx={{ p: '20px 10px', marginTop: '12px' }}>
@@ -62,8 +121,8 @@ export const PageChart = () => {
         <Title title="每月营收" />
         <Dropdown 
           options={dropDownOptions} 
-          onChange={(options) => { setTimeRange(options) }}
-          value={timeRange}
+          onChange={handleDropdownChange}
+          value={selectedOption}
           color="primary"
           sx={{
             padding: '8px 13px',
@@ -74,11 +133,15 @@ export const PageChart = () => {
           disableElevation
         />
       </Box>
-      <ReactECharts
+      {!isLoading && <ReactECharts
         option={option}
         style={{ width: '100%', height: '350px' }}
         theme="light"
-      />
+      />}
+
+      {isLoading && <Box display="flex" justifyContent="center" alignItems="center" height="350px">
+        <CircularProgress />
+      </Box>}
     </Paper>
   )
 }

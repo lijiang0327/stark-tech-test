@@ -19,7 +19,7 @@ export const PageHeader = () => {
   }
 
   const handleInputBlur = () => {
-    setTimeout(() => setOpen(false), 100)
+    setTimeout(() => setOpen(false), 300)
   }
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -56,8 +56,8 @@ export const PageHeader = () => {
                   <List>
                     {stocksInfo?.data.map((stock) => {
                       return (
-                        <ListItem key={stock.stock_id + stock.industry_category}>
-                          <ListItemButton onClick={() => setStockInfo(stock)}>{stock.stock_name} ({stock.stock_id}) - {stock.industry_category}</ListItemButton>
+                        <ListItem onClick={() => setStockInfo(stock)} key={stock.stock_id + stock.industry_category}>
+                          <ListItemButton>{stock.stock_name} ({stock.stock_id}) - {stock.industry_category}</ListItemButton>
                         </ListItem>
                       )
                     })}

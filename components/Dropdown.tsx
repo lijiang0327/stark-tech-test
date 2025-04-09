@@ -3,7 +3,7 @@ import {Button, ButtonProps, Menu, MenuItem} from '@mui/material';
 
 export interface DropdownOption {
   label: string;
-  value: string;
+  value: number;
 }
 
 export interface DropdownProps extends Omit<ButtonProps, 'onChange' | 'value' | 'onClick'> {

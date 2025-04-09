@@ -1,13 +1,45 @@
-import { Box, Paper, Table, TableRow, TableContainer, TableCell, TableBody, Typography } from "@mui/material"
+import { Box, Paper, Table, TableRow, TableContainer, TableCell, TableBody, Typography, CircularProgress } from "@mui/material"
+import { useEffect, useMemo, useRef, type FC } from "react"
 
 import { Title } from "@/components/Title"
+import { TaiwanStockMonthRevenueAndGrowthRate } from "@/api"
+import dayjs from "dayjs"
 
-export const PageTable = () => {
-  const data = {
-    '年度月份': ['202307', '202308', '202309', '202310', '202307', '202308', '202309', '202310', '202307', '202308', '202309', '202310'],
-    '每月营收': [1000, 2000, 3000, 4000, 1000, 2000, 3000, 4000, 1000, 2000, 3000, 4000],
-    '单月营收年增率': [10, 20, 30, 40, 10, 20, 30, 40, 10, 20, 30, 40],
-  }
+export interface PageTableProps {
+  sourceData: TaiwanStockMonthRevenueAndGrowthRate[];
+  isLoading: boolean;
+}
+
+export const PageTable: FC<PageTableProps> = ({ sourceData, isLoading }) => {
+  const tableRef = useRef<HTMLTableElement | null>(null)
+  const tableContainerRef = useRef<HTMLDivElement | null>(null)
+
+  const data = useMemo(() => {
+    const months = [];
+    const revenues = [];
+    const growthRates = [];
+
+    for (const item of sourceData) {
+      months.push(dayjs(`${item.revenue_year}-${item.revenue_month}`).format('YYYYMM'))
+      revenues.push(item.revenue * 0.001)
+      growthRates.push(item.growth_rate)
+    }
+
+    return {
+      '年度月份': months,
+      '每月营收 (千元)': revenues,
+      '单月营收年增率 (%)': growthRates,
+    }
+  }, [sourceData])
+
+  useEffect(() => {
+    if (sourceData.length > 0 && tableRef.current && tableContainerRef.current) {
+      tableContainerRef.current.scrollTo({
+        left: tableRef.current.clientWidth - tableContainerRef.current.offsetLeft,
+        behavior: 'smooth'
+      });
+    }
+  }, [sourceData])
 
   return (
     <>
@@ -17,8 +49,9 @@ export const PageTable = () => {
         </Box>
         <TableContainer
           sx={{ maxWidth: '100%', overflowX: 'auto' }}
+          ref={tableContainerRef}
         >
-          <Table>
+          {!isLoading && <Table ref={tableRef}>
             <TableBody>
               {Object.entries(data).map(([key, value], index) => {
                 const bgColor = index % 2 === 0 ? '#f5f5f5' : '#ffffff'
@@ -54,7 +87,10 @@ export const PageTable = () => {
                 )
               })}
             </TableBody>
-          </Table>
+          </Table>}
+          {isLoading && <Box display="flex" justifyContent="center" alignItems="center" height="160px">
+            <CircularProgress />
+          </Box>}
         </TableContainer>
       </Paper>
       <Box display="flex" justifyContent="flex-end" alignItems="center" mt={2} mb={6}>
