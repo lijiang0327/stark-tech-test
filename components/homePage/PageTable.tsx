@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, type FC } from "react"
 import { Title } from "@/components/Title"
 import { TaiwanStockMonthRevenueAndGrowthRate } from "@/api"
 import dayjs from "dayjs"
+import { NoData } from "../NoData"
 
 export interface PageTableProps {
   sourceData: TaiwanStockMonthRevenueAndGrowthRate[];
@@ -22,7 +23,7 @@ export const PageTable: FC<PageTableProps> = ({ sourceData, isLoading }) => {
     for (const item of sourceData) {
       months.push(dayjs(`${item.revenue_year}-${item.revenue_month}`).format('YYYYMM'))
       revenues.push(item.revenue * 0.001)
-      growthRates.push(item.growth_rate)
+      growthRates.push(item.growth_rate.toFixed(2))
     }
 
     return {
@@ -43,15 +44,15 @@ export const PageTable: FC<PageTableProps> = ({ sourceData, isLoading }) => {
 
   return (
     <>
-      <Paper elevation={0} sx={{ p: '20px 10px', marginTop: '12px' }}>
+      <Paper elevation={0} sx={{ p: '20px 10px', marginTop: '12px', position: 'relative' }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" px={1} mb={4}>
           <Title title="详细数据" />
         </Box>
         <TableContainer
-          sx={{ maxWidth: '100%', overflowX: 'auto' }}
+          sx={{ maxWidth: 'calc(100% - 156px)', overflowX: 'auto', marginLeft: '156px' }}
           ref={tableContainerRef}
         >
-          {!isLoading && <Table ref={tableRef}>
+          {!isLoading && !!sourceData?.length && <Table ref={tableRef}>
             <TableBody>
               {Object.entries(data).map(([key, value], index) => {
                 const bgColor = index % 2 === 0 ? '#f5f5f5' : '#ffffff'
@@ -61,9 +62,9 @@ export const PageTable: FC<PageTableProps> = ({ sourceData, isLoading }) => {
                   <TableRow key={key}>
                     <TableCell
                       sx={{
-                        position: 'sticky',
-                        left: 0,
-                        zIndex: 1,
+                        position: 'absolute',
+                        left: '10px',
+                        zIndex: 10,
                         fontWeight: 500,
                         backgroundColor: bgColor,
                         border: border,
@@ -88,7 +89,8 @@ export const PageTable: FC<PageTableProps> = ({ sourceData, isLoading }) => {
               })}
             </TableBody>
           </Table>}
-          {isLoading && <Box display="flex" justifyContent="center" alignItems="center" height="160px">
+          {!isLoading && !sourceData?.length && <NoData marginLeft="-156px" height="160px" />}
+          {isLoading && <Box marginLeft="-156px" display="flex" justifyContent="center" alignItems="center" height="160px">
             <CircularProgress />
           </Box>}
         </TableContainer>

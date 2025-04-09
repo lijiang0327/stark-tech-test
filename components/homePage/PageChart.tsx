@@ -9,6 +9,7 @@ import { Title } from "@/components/Title"
 import { Dropdown, DropdownOption } from "@/components/Dropdown"
 import { useStore } from "@/store"
 import { TaiwanStockMonthRevenueAndGrowthRate } from "@/api"
+import { NoData } from "@/components/NoData"
 
 export interface PageChartProps {
   data: TaiwanStockMonthRevenueAndGrowthRate[];
@@ -143,11 +144,13 @@ export const PageChart: FC<PageChartProps> = ({ data, isLoading }) => {
           disableElevation
         />
       </Box>
-      {!isLoading && <ReactECharts
+      {!isLoading && !!data?.length && <ReactECharts
         option={option}
         style={{ width: '100%', height: '350px' }}
         theme="light"
       />}
+
+      {!isLoading && !data?.length && <NoData height="350px" />}
 
       {isLoading && <Box display="flex" justifyContent="center" alignItems="center" height="350px">
         <CircularProgress />
