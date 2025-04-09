@@ -24,7 +24,7 @@ export const PageChart: FC<PageChartProps> = ({ data, isLoading }) => {
     const xAxisData: string[] = []
 
     data?.forEach((item) => {
-      revenues.push(item.revenue)
+      revenues.push(item.revenue * 0.001)
       growthRates.push(item.growth_rate)
       xAxisData.push(dayjs(`${item.revenue_year}-${item.revenue_month}`).format('YYYYMM'))
     })
