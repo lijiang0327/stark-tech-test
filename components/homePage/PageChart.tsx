@@ -24,7 +24,7 @@ export const PageChart: FC<PageChartProps> = ({ data, isLoading }) => {
     const xAxisData: string[] = []
 
     data?.forEach((item) => {
-      revenues.push(item.revenue * 0.0001)
+      revenues.push(item.revenue)
       growthRates.push(item.growth_rate)
       xAxisData.push(dayjs(`${item.revenue_year}-${item.revenue_month}`).format('YYYYMM'))
     })
@@ -92,7 +92,7 @@ export const PageChart: FC<PageChartProps> = ({ data, isLoading }) => {
           data: revenues,
           tooltip: {
             show: true,
-            valueFormatter: (value: number) => `${value.toFixed(2)} 千元`
+            valueFormatter: (value: number) => `${value} 千元`
           }
         },
         {
