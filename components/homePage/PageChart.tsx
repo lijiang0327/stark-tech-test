@@ -69,8 +69,18 @@ export const PageChart: FC<PageChartProps> = ({ data, isLoading }) => {
         {
           type: 'value',
           position: 'right',
-          min: -100,
-          max: 100,
+          min: 'dataMin',
+          max: 'dataMax',
+          interval: 20,
+          axisLabel: {
+            formatter: (value: number) => `${Math.round(value)}`
+          },
+          axisLine: {
+            onZero: true,
+          },
+          splitLine: {
+            show: false,
+          }
         }
       ],
       series: [
